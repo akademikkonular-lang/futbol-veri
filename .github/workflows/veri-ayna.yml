@@ -1,0 +1,44 @@
+name: veri-ayna
+
+# football-data.co.uk kaynagi Turkiye'den erisilemiyor. GitHub'in kosucu
+# sunuculari Turkiye disinda oldugu icin erisebiliyorlar. Bu is akisi veriyi
+# indirip bu depoda sakliyor; yerel makine raw.githubusercontent.com uzerinden
+# cekiyor. VPN gerekmez, manuel giris gerekmez.
+
+on:
+  schedule:
+    # Kaynak pazar ve carsamba geceleri guncelleniyor.
+    # Biz pazartesi ve persembe 06:00 UTC'de cekiyoruz (TR saati 09:00).
+    - cron: '0 6 * * 1'
+    - cron: '0 6 * * 4'
+  workflow_dispatch:        # elle tetikleme dugmesi
+
+permissions:
+  contents: write
+
+jobs:
+  topla:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Veriyi indir
+        run: python topla.py --sezon 12
+
+      - name: Degisiklikleri kaydet
+        run: |
+          git config user.name  "veri-ayna"
+          git config user.email "veri-ayna@users.noreply.github.com"
+          git add ham
+          if git diff --staged --quiet; then
+            echo "Degisiklik yok."
+          else
+            git commit -m "veri guncellendi: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
