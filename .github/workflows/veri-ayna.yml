@@ -4,6 +4,13 @@ name: veri-ayna
 # sunuculari Turkiye disinda oldugu icin erisebiliyorlar. Bu is akisi veriyi
 # indirip bu depoda sakliyor; yerel makine raw.githubusercontent.com uzerinden
 # cekiyor. VPN gerekmez, manuel giris gerekmez.
+#
+# PROXY: 14 Eylul 2026'dan sonra football-data.co.uk, GitHub Actions'in
+# veri merkezi IP'lerini de ENGELLEMEYE basladi ("Connection refused").
+# PROXY_URL adinda bir repo secret'i tanimlarsan (residential proxy
+# baglanti adresi, orn. http://kullanici:sifre@host:port), topla.py
+# TUM indirmeleri o proxy uzerinden yapar. Secret tanimli DEGILSE,
+# davranis ONCEKI ile AYNIdir (proxy kullanilmaz).
 
 on:
   schedule:
@@ -29,6 +36,8 @@ jobs:
           python-version: '3.12'
 
       - name: Veriyi indir
+        env:
+          PROXY_URL: ${{ secrets.PROXY_URL }}
         run: python topla.py --sezon 12
 
       - name: Degisiklikleri kaydet
